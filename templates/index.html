@@ -7,19 +7,16 @@
     <link href="./css/tailwind.css" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css">
 
-
-
-
     <title>Green GPT</title>
 </head>
 <body>
 <div class="text-roboto bg-gr2 w-screen h-screen grid grid-cols-10"><!--Full content-->
-    <div class="col-start-1 col-span-10 pl-[20%] pr-[20%] h-[30vh] bg-gr2"><!--Input pole-->
-        <div class="h-[30%] w-full flex items-end justify-center px-[10%]"><!--Samotne pole-->
-            <div class="w-[80%] h-16 drop-shadow-lg bg-gr1 rounded-xl flex justify-between px-2 py-4">
-                <input id="search" class="text-white bg-gr1 w-[90%] rounded-xl border-transparent focus:border-transparent focus:ring-0 outline-none" placeholder="Send your message...">
+    <div class="col-start-1 col-span-10 pl-[20%] pr-[20%] h-[35vh] bg-gr2"><!--Input pole-->
+        <div class="h-[30%] w-full flex items-end justify-center px-[10%] mt-4"><!--Samotne pole-->
+            <div class="w-full h-16 drop-shadow-lg bg-gr1 rounded-xl flex justify-between px-4 py-4">
+                <input id="search" class="text-w1 bg-gr1 w-[90%] rounded-xl border-transparent focus:border-transparent focus:ring-0 outline-none" placeholder="Send your message...">
                 </input>
-                <button id="submit" class="text-white w-[10%] flex items-center justify-center" title="Generate response">
+                <button id="submit" class="text-w1 w-[10%] flex items-center justify-center" title="Generate response">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                         <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
                     </svg>
@@ -29,13 +26,8 @@
         <div id="suggestions" class="h-[70%] w-full px-[10%]"><!--Suggested prompt-->
         </div>
     </div>
-    <div class="col-start-1 col-span-10 bg-gr1 h-[70vh] pl-[20%] pr-[20%]"><!--Historie-->
-        <div><!--Odeslanej prompt-->
-        </div>
-        <div><!--Generovana odpoved-->
-        </div>
-        <div><!--Nase suggestion bez kontextu-->
-        </div>
+    <div id="history" class="col-start-1 col-span-10 bg-gr1 w-full h-[65vh] overflow-auto scrollbar">
+    <!-- History will be populated here -->
     </div>
 </div>
 
@@ -57,34 +49,82 @@
                 document.getElementById('suggestions').innerHTML = '';
                 data.forEach(suggestion => {
                     var div = document.createElement('div');
-                    div.className = "text-white text-base pt-4 flex items-center mx-[10%]";
+                    div.className = "text-w1 text-base pt-4 flex items-center mx-[10%] cursor-pointer hover:text-white";
                     div.textContent = suggestion;
+                    div.addEventListener('click', function() {
+                        addMessageToHistory(suggestion, 'H'); // Add the clicked suggestion as a user message
+                        addSavedReplyToHistory(suggestion); // then fetch the reply for this suggestion from the server
+                        document.getElementById('search').value = '';
+                        document.getElementById('suggestions').innerHTML = '';
+                    });
                     document.getElementById('suggestions').appendChild(div);
                 });
             });
         }
     });
 
-    document.getElementById('submit').addEventListener('click', function() {
-        fetch('http://localhost:5000/generate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                prompt: document.getElementById('search').value
-            })
+
+
+    function addMessageToHistory(message, sender, isSavedReply) {
+      var history = document.getElementById('history');
+      var messageDiv = document.createElement('div');
+      // create appropriate classnames for AI and user
+      var messageClass = sender === 'AI' ? 'bg-gr2' : '';
+      // Add border if it is a saved reply
+      var savedReplyClass = isSavedReply ? 'border-blue-500 border-2' : '';
+      messageDiv.className = "w-full flex justify-center items-start py-4 " + messageClass + " " + savedReplyClass + " pl-[20%] pr-[20%]";
+      var senderDiv = document.createElement('div');
+      senderDiv.className = "w-[10%] pr-6 ml-auto flex justify-end";
+      var senderIcon = document.createElement('div');
+      senderIcon.className = "w-9 h-9 " + (sender === 'AI' ? 'bg-red-800' : 'bg-green-800') + " rounded-full flex items-center justify-center text-w1";
+      senderIcon.textContent = sender;
+      senderDiv.appendChild(senderIcon);
+      messageDiv.appendChild(senderDiv);
+      var textDiv = document.createElement('div');
+      textDiv.className = "w-[90%] text-w1 flex items-center mt-2";
+      textDiv.textContent = message;
+      messageDiv.appendChild(textDiv);
+
+      // add new message to the end of history
+      history.appendChild(messageDiv);
+    }
+
+   document.getElementById('submit').addEventListener('click', function() {
+      var userMessage = document.getElementById('search').value;
+      addMessageToHistory(userMessage, 'H'); // H for Human
+      fetch('http://localhost:5000/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          prompt: userMessage
         })
+      })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('suggestions').innerHTML = '';
-
-            var div = document.createElement('div');
-            div.className = "text-white text-base pt-4 flex items-center mx-[10%]";
-            div.textContent = data;
-            document.getElementById('suggestions').appendChild(div);
+          document.getElementById('suggestions').innerHTML = '';
+          addMessageToHistory(data, 'AI');
+          document.getElementById('search').value = ''; // This line clears the search bar
         });
     });
+
+function addSavedReplyToHistory(suggestion) {
+    fetch('http://localhost:5000/fetch_saved_reply', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            suggestion: suggestion
+        })
+    })
+    .then(response => response.json())
+    .then(savedReply => {
+        // Add the fetched reply as an AI message, with isSavedReply set to true
+        addMessageToHistory(savedReply, 'AI', true);
+    });
+}
 </script>
 </body>
 </html>

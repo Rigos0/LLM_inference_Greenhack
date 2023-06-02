@@ -26,4 +26,3 @@ def generate_reply(prompt):
 
     return reply
 
-# Test the function
