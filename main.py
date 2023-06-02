@@ -1,27 +1,27 @@
-from flask import Flask, render_template, request
-import torch
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
+from gpt2_generator import *
+from sentence_encoder import *
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # This will enable CORS for all routes
 
-tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-model = GPT2LMHeadModel.from_pretrained("gpt2")
 
-@app.route('/', methods=['GET', 'POST'])
-def home():
-    if request.method == 'POST':
-        prompt = request.form['prompt']
-        input_ids = tokenizer.encode(prompt, return_tensors='pt')
-        model_output = model.generate(
-            input_ids,
-            max_length=100,
-            num_return_sequences=5,
-            do_sample=True,
-            temperature=0.7
-        )
-        text = tokenizer.decode(model_output[0], skip_special_tokens=True)
-        return render_template('home.html', generated_text=text)
-    return render_template('home.html')
+@app.route('/search', methods=['POST'])
+def search():
+    data = request.get_json()
+    prompt = data.get('prompt')
+    n = data.get('n')
+    responses = database.find_nearest_prompts(prompt, n)
+    return jsonify(responses)
+
+@app.route('/generate', methods=['POST'])
+def generate():
+    data = request.get_json()
+    prompt = data.get('prompt')
+    response = generate_reply(prompt)
+    return jsonify(response)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5000, debug=True)

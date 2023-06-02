@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="./css/tailwind.css" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+
+
+
+
+    <title>Green GPT</title>
+</head>
+<body>
+<div class="text-roboto bg-gr2 w-screen h-screen grid grid-cols-10"><!--Full content-->
+    <div class="col-start-1 col-span-10 pl-[20%] pr-[20%] h-[30vh] bg-gr2"><!--Input pole-->
+        <div class="h-[30%] w-full flex items-end justify-center px-[10%]"><!--Samotne pole-->
+            <div class="w-[80%] h-16 drop-shadow-lg bg-gr1 rounded-xl flex justify-between px-2 py-4">
+                <input id="search" class="text-white bg-gr1 w-[90%] rounded-xl border-transparent focus:border-transparent focus:ring-0 outline-none" placeholder="Send your message...">
+                </input>
+                <button id="submit" class="text-white w-[10%] flex items-center justify-center" title="Generate response">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                        <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="suggestions" class="h-[70%] w-full px-[10%]"><!--Suggested prompt-->
+        </div>
+    </div>
+    <div class="col-start-1 col-span-10 bg-gr1 h-[70vh] pl-[20%] pr-[20%]"><!--Historie-->
+        <div><!--Odeslanej prompt-->
+        </div>
+        <div><!--Generovana odpoved-->
+        </div>
+        <div><!--Nase suggestion bez kontextu-->
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('search').addEventListener('keyup', function(event) {
+        if (event.keyCode === 32) {
+            fetch('http://localhost:5000/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    prompt: this.value,
+                    n: 3
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('suggestions').innerHTML = '';
+                data.forEach(suggestion => {
+                    var div = document.createElement('div');
+                    div.className = "text-white text-base pt-4 flex items-center mx-[10%]";
+                    div.textContent = suggestion;
+                    document.getElementById('suggestions').appendChild(div);
+                });
+            });
+        }
+    });
+
+    document.getElementById('submit').addEventListener('click', function() {
+        fetch('http://localhost:5000/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: document.getElementById('search').value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('suggestions').innerHTML = '';
+
+            var div = document.createElement('div');
+            div.className = "text-white text-base pt-4 flex items-center mx-[10%]";
+            div.textContent = data;
+            document.getElementById('suggestions').appendChild(div);
+        });
+    });
+</script>
+</body>
+</html>

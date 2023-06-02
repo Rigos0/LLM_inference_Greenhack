@@ -27,4 +27,3 @@ def generate_reply(prompt):
     return reply
 
 # Test the function
-print(generate_reply("Your favourite type of cat"))
