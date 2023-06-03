@@ -32,99 +32,124 @@
 </div>
 
 <script>
-    document.getElementById('search').addEventListener('keyup', function(event) {
-        if (event.keyCode === 32) {
-            fetch('http://localhost:5000/search', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    prompt: this.value,
-                    n: 3
-                })
+document.getElementById('search').addEventListener('keyup', function(event) {
+    if (event.keyCode === 13) { // 13 is keyCode for Enter
+        event.preventDefault(); // Prevent form submission
+        document.getElementById('submit').click(); // Simulate click on submit button
+        this.value = ''; // Clear the search bar
+    } else if (event.keyCode === 32) { // 32 is keyCode for Space
+        // Your original space key up logic here...
+        fetch('http://localhost:5000/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: this.value,
+                n: 3
             })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('suggestions').innerHTML = '';
-                data.forEach(suggestion => {
-                    var div = document.createElement('div');
-                    div.className = "text-w1 text-base pt-4 flex items-center cursor-pointer hover:text-white";
-                    div.textContent = suggestion;
-                    div.addEventListener('click', function() {
-                        addMessageToHistory(suggestion, 'H'); // Add the clicked suggestion as a user message
-                        addSavedReplyToHistory(suggestion); // then fetch the reply for this suggestion from the server
-                        document.getElementById('search').value = '';
-                        document.getElementById('suggestions').innerHTML = '';
-                    });
-                    document.getElementById('suggestions').appendChild(div);
-                });
-            });
-        }
-    });
-
-
-
-    function addMessageToHistory(message, sender, isSavedReply) {
-      var history = document.getElementById('history');
-      var messageDiv = document.createElement('div');
-      // create appropriate classnames for AI and user
-      var messageClass = sender === 'AI' ? 'bg-gr2' : '';
-      // Add border if it is a saved reply
-      var savedReplyClass = isSavedReply ? 'border-w1 border-2 italic': '';
-      messageDiv.className = "w-full flex justify-center items-start py-4 " + messageClass + " " + savedReplyClass + " pl-[20%] pr-[20%]";
-      var senderDiv = document.createElement('div');
-      senderDiv.className = "w-[10%] pr-6 ml-auto flex justify-end";
-      var senderIcon = document.createElement('div');
-      senderIcon.className = "w-9 h-9 " + (sender === 'AI' ? 'bg-red-800' : 'bg-green-800') + " rounded-full flex items-center justify-center text-w1";
-      senderIcon.textContent = sender;
-      senderDiv.appendChild(senderIcon);
-      messageDiv.appendChild(senderDiv);
-      var textDiv = document.createElement('div');
-      textDiv.className = "w-[90%] text-w1 flex items-center mt-2";
-      textDiv.textContent = message;
-      messageDiv.appendChild(textDiv);
-
-      // add new message to the end of history
-      history.appendChild(messageDiv);
-    }
-
-   document.getElementById('submit').addEventListener('click', function() {
-      var userMessage = document.getElementById('search').value;
-      addMessageToHistory(userMessage, 'H'); // H for Human
-      fetch('http://localhost:5000/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          prompt: userMessage
         })
-      })
         .then(response => response.json())
         .then(data => {
-          document.getElementById('suggestions').innerHTML = '';
-          addMessageToHistory(data, 'AI');
-          document.getElementById('search').value = ''; // This line clears the search bar
+            document.getElementById('suggestions').innerHTML = '';
+            data.forEach(suggestion => {
+                var div = document.createElement('div');
+                div.className = "text-w1 text-base pt-4 flex items-center cursor-pointer hover:text-white";
+                div.textContent = suggestion;
+                div.addEventListener('click', function() {
+                    addMessageToHistory(suggestion, 'H'); // Add the clicked suggestion as a user message
+                    addSavedReplyToHistory(suggestion); // then fetch the reply for this suggestion from the server
+                    document.getElementById('search').value = '';
+                    document.getElementById('suggestions').innerHTML = '';
+                });
+                document.getElementById('suggestions').appendChild(div);
+            });
         });
-    });
+    }
+});
 
-function addSavedReplyToHistory(suggestion) {
-    fetch('http://localhost:5000/fetch_saved_reply', {
+    function addMessageToHistory(message, sender, isSavedReply) {
+        var history = document.getElementById('history');
+        var messageDiv = document.createElement('div');
+
+        // create appropriate classnames for AI and user
+        var messageClass = sender === 'AI' ? 'bg-gr2' : '';
+
+        // Add border if it is a saved reply
+        var savedReplyClass = isSavedReply ? 'border-w1 border-2 italic' : '';
+
+        messageDiv.className = "w-full flex justify-center items-start py-4 " + messageClass + " " + savedReplyClass + " pl-[20%] pr-[20%]";
+        var senderDiv = document.createElement('div');
+        senderDiv.className = "w-[10%] pr-6 ml-auto flex justify-end";
+        var senderIcon = document.createElement('div');
+        senderIcon.className = "w-9 h-9 " + (sender === 'AI' ? 'bg-red-800' : 'bg-green-800') + " rounded-full flex items-center justify-center text-w1";
+        senderIcon.textContent = sender;
+        senderDiv.appendChild(senderIcon);
+        messageDiv.appendChild(senderDiv);
+
+        var textDiv = document.createElement('div');
+        textDiv.className = "w-[90%] text-w1 flex items-center mt-2";
+        messageDiv.appendChild(textDiv);
+
+        // add new message to the end of history
+        history.appendChild(messageDiv);
+
+        // Perform typing animation for AI's responses
+        if (sender === 'AI' && !isSavedReply) {
+            var text = message;
+            var duration = 50; // Duration per character in milliseconds
+            var currentIndex = 0;
+
+            var typingInterval = setInterval(function() {
+                if (currentIndex < text.length) {
+                    textDiv.textContent += text.charAt(currentIndex);
+                    currentIndex++;
+                } else {
+                    clearInterval(typingInterval);
+                }
+            }, duration);
+        } else {
+            textDiv.textContent = message;
+        }
+    }
+
+document.getElementById('submit').addEventListener('click', function() {
+    var userMessage = document.getElementById('search').value;
+    addMessageToHistory(userMessage, 'H'); // H for Human
+
+    fetch('http://localhost:5000/generate', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            suggestion: suggestion
+            prompt: userMessage
         })
     })
-    .then(response => response.json())
-    .then(savedReply => {
-        // Add the fetched reply as an AI message, with isSavedReply set to true
-        addMessageToHistory(savedReply, 'AI', true);
-    });
-}
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('suggestions').innerHTML = '';
+            addMessageToHistory(data, 'AI');
+            document.getElementById('search').value = ''; // This line clears the search bar
+        });
+});
+
+    function addSavedReplyToHistory(suggestion) {
+        fetch('http://localhost:5000/fetch_saved_reply', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                suggestion: suggestion
+            })
+        })
+            .then(response => response.json())
+            .then(savedReply => {
+                // Add the fetched reply as an AI message, with isSavedReply set to true
+                addMessageToHistory(savedReply, 'AI', true);
+            });
+    }
 </script>
 </body>
 </html>

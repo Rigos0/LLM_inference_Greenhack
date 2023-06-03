@@ -29,8 +29,7 @@ def fetch_saved_reply():
     suggestion = data.get('suggestion')
     # Fetch the saved reply from the database using the suggestion as a query
     # This is just an example, you will need to implement the actual database query
-    #saved_reply = database.fetch_saved_reply(suggestion)
-    saved_reply = "mockup"
+    saved_reply = database.output_from_prompt(suggestion)
     return jsonify(saved_reply)
 
 
