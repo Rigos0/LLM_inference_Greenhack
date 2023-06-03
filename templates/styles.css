@@ -757,6 +757,14 @@ video {
   padding-top: 1rem;
 }
 
+.pl-\[25\%\]{
+  padding-left: 25%;
+}
+
+.pr-\[25\%\]{
+  padding-right: 25%;
+}
+
 .text-base{
   font-size: 1rem;
   line-height: 1.5rem;

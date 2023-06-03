@@ -49,7 +49,7 @@
                 document.getElementById('suggestions').innerHTML = '';
                 data.forEach(suggestion => {
                     var div = document.createElement('div');
-                    div.className = "text-w1 text-base pt-4 flex items-center mx-[10%] cursor-pointer hover:text-white";
+                    div.className = "text-w1 text-base pt-4 flex items-center cursor-pointer hover:text-white";
                     div.textContent = suggestion;
                     div.addEventListener('click', function() {
                         addMessageToHistory(suggestion, 'H'); // Add the clicked suggestion as a user message
@@ -71,7 +71,7 @@
       // create appropriate classnames for AI and user
       var messageClass = sender === 'AI' ? 'bg-gr2' : '';
       // Add border if it is a saved reply
-      var savedReplyClass = isSavedReply ? 'border-blue-500 border-2' : '';
+      var savedReplyClass = isSavedReply ? 'border-w1 border-2 italic': '';
       messageDiv.className = "w-full flex justify-center items-start py-4 " + messageClass + " " + savedReplyClass + " pl-[20%] pr-[20%]";
       var senderDiv = document.createElement('div');
       senderDiv.className = "w-[10%] pr-6 ml-auto flex justify-end";

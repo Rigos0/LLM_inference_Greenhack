@@ -3,6 +3,7 @@ import numpy as np
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
+
 class Database:
     def __init__(self):
         self.prompts = []
