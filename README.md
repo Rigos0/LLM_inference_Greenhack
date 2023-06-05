@@ -1,3 +1,4 @@
 # LLM_inference_Greenhack
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/mC6s2D3xzDs?start=41" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+[![GreenGPT](https://img.youtube.com/vi/mC6s2D3xzDs/0.jpg)](https://www.youtube.com/watch?v=mC6s2D3xzDs?t=41)
+
