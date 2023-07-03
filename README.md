@@ -10,7 +10,7 @@ https://submissions.greenhack.eu/project-detail/green-gpt_t25
 
 ### Cloning instructions
 
-Insert your OpenAI API key in the gpt3_generator.py file. Alternatively, use gpt2 locally (import gpt2_generator in main.py).
+Insert your OpenAI API key in the gpt3_generator.py file. Alternatively, use gpt2 locally (import gpt2_generator in main.py instead of gpt3_generator).
 
 ### Requirements
 
